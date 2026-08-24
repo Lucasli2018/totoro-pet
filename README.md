@@ -24,9 +24,7 @@ totoro-pet 是一个 [DeepSeek Harness](https://www.npmjs.com/package/@deepseek-
 前置要求：Node.js ≥ 18，且能正常运行 `dsh web`（GUI 地址 http://127.0.0.1:3080）。
 
 ```powershell
-cd F:\dsh\totoro-pet
-npm pack                                              # 生成 totoro-pet-0.1.0.tgz（仓库已附带，可跳过）
-dsh plugin --profile web add F:\dsh\totoro-pet\totoro-pet-0.1.0.tgz
+dsh plugin --profile web add totoro-pet
 ```
 
 然后重启 dsh web，刷新 http://127.0.0.1:3080 —— 页面右下角出现龙猫即安装成功。分步详解见[《使用手册》第二章](docs/使用手册.md#第二章-安装与启用)。
@@ -92,6 +90,34 @@ npm 包内含 `lib`、`docs`、`cordis.patch.yml` 与 README（`assets`/`scripts
 - [docs/使用手册.md](docs/使用手册.md) —— 从安装到卸载的完整教程、数值详解、故障排查与 FAQ
 - [docs/API.md](docs/API.md) —— 接口字段级契约（改数值须三处同步的第一权威）
 - [docs/REVIEW.md](docs/REVIEW.md) —— 形态/契约/安全/功能四类核验记录
+
+## 🔄 卸载 vs 停用（无需重启 dsh）
+
+- **卸载** `dsh plugin --profile web remove totoro-pet`：本质是在 web profile 执行 `pnpm remove`，只改磁盘上的 `package.json` / lockfile。运行中的 dsh 服务进程在启动时已把插件 bundle 清单读进内存，**刷新页面不会重新读盘**，需**彻底退出并重启 dsh** 才能清掉残留引用。
+- **停用（推荐，HMR 即时生效）**：不改磁盘卸载，而是在你的 web profile 补丁层 `cordis.patch.yml` 末尾追加：
+
+  ```yaml
+  - id: totoro-pet
+    disabled: true
+  ```
+
+  保存后约 1 秒 dsh 自动重新组装（HMR），刷新页面即生效，**无需重启 dsh 服务**。
+
+## 🌐 提交到 dsh 插件市场
+
+1. Fork [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)，在 `data/plugins/` 新增 `Lucasli2018__totoro-pet.yml`：
+
+   ```yaml
+   url: https://github.com/Lucasli2018/totoro-pet
+   name: Lucasli2018/totoro-pet
+   category: fun
+   description:
+     en: A desktop pet that lives in a floating overlay; click it to interact and switch between idle, sleeping, happy, and eating states.
+     zh: '桌面宠物插件，常驻悬浮层养一只龙猫，点击互动并可在待机、睡觉、开心、进食等状态间切换。'
+   ```
+
+2. PR 门禁（pr-gate）硬性要求：仓库含 `dsh.bundle`（已满足）、创建 ≥1 天、提交数 ≥10、加 `dsh-plugin` topic。
+3. 合并后约一天内 dsh-market 自动收录；本地调试可暂用 `dsh plugin --profile web add <本地 totoro-pet-*.tgz>`。
 
 ## License
 
