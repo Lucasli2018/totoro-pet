@@ -27,7 +27,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --check lib/index.js && node --check lib/client.js"
+    "test": "node --check lib/index.js && node --check lib/client.js && node tests/smoke-client.mjs"
   },
   "dsh": {
     "bundle": {
