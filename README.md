@@ -19,15 +19,17 @@ totoro-pet 是一个 [DeepSeek Harness](https://www.npmjs.com/package/@deepseek-
 - **可靠持久化**：状态落盘 tmp+rename 原子写，坏档自动降级默认值继续服务
 - **零构建**：浏览器半边单文件内嵌全部 SVG/CSS，无打包器、无第三方运行时依赖；宿主冒烟 18 项全绿
 
-## 📦 安装（本地 tgz）
+## 📦 安装（npm 包）
 
-前置要求：Node.js ≥ 18，且能正常运行 `dsh web`（GUI 地址 http://127.0.0.1:3080）。
+前置要求：Node.js ≥ 18，能正常访问 npm 仓库（国内可换镜像源），且能正常运行 `dsh web`（GUI 地址 http://127.0.0.1:3080）。totoro-pet 已发布到 npm 公开仓库，直接用包名即可安装：
 
 ```powershell
 dsh plugin --profile web add totoro-pet
 ```
 
-然后重启 dsh web，刷新 http://127.0.0.1:3080 —— 页面右下角出现龙猫即安装成功。分步详解见[《使用手册》第二章](docs/使用手册.md#第二章-安装与启用)。
+该命令会从 npm 拉取最新版 `totoro-pet` 并写入 web profile。然后重启 dsh web，刷新 http://127.0.0.1:3080 —— 页面右下角出现龙猫即安装成功。分步详解见[《使用手册》第二章](docs/使用手册.md#第二章-安装与启用)。
+
+> 装指定版本：`dsh plugin --profile web add totoro-pet@0.1.2`；升级到最新版：先 `remove` 再 `add`，或视 dsh 版本使用 `update` 子命令。
 
 ## 🚀 快速上手三步
 
@@ -103,6 +105,34 @@ npm 包内含 `lib`、`docs`、`cordis.patch.yml` 与 README（`assets`/`scripts
 
   保存后约 1 秒 dsh 自动重新组装（HMR），刷新页面即生效，**无需重启 dsh 服务**。
 
+## 🔥 热加载开发（HMR，改源码即时生效）
+
+DSH 的客户端模块层（`@deepseek-ai/dsh-client-modules` + `@deepseek-ai/dsh-client-hmr`）**原生支持插件 `client.js` 的热替换**：服务端以一个定时器轮询每个插件的 `lib/client.js` 文件，内容变化即重算版本号（基于文件内容的 sha1），通过 SSE 通道（`/plugins/events`）广播 `rebuilt` 帧；浏览器收到后用「失效 → 预取新包 → 重挂载」的 fiber swap 流程就地替换该插件，**无需重启 dsh、也无需手动刷新页面**。
+
+> 前提：DSH 读到的是**你的源码文件本身**，而非 npm 安装到 `node_modules` 的**副本**。普通 `dsh plugin --profile web add totoro-pet`（从 npm 安装）装的是副本，改源码不会触发热加载；必须用 **`link:` 软链**安装源码目录。
+
+**一步启用热加载**（在插件根目录执行）：
+
+```powershell
+npm run link      # = dsh plugin --profile web add link:.
+```
+
+> ⚠️ 首次 `npm run link` 后，**请彻底退出并重启 dsh 一次**：客户端模块层（client-modules）在 dsh 启动时扫描 `node_modules` 把本插件纳入运行态，并建立 HMR 轮询基线。这一步仅在「新增 / 移除插件」时需要；之后改源码都走 HMR，不再重启。
+
+- `link:` 安装会在 web profile 的 `node_modules/totoro-pet` 下创建一个 **junction（Windows 软链）**指向本仓库源码；DSH 的 HMR 轮询会跟随软链检测 `lib/client.js` 的变化。
+- 重启后，在 `lib/client.js` 里修改 SVG、交互逻辑、样式字符串等，**保存后约 1 秒内桌面宠物自动热替换**，不再需要重新打包、重新安装或重启 dsh。
+- 本插件的 `apply()` 已确保幂等：直接 `ctx.slots.inject(...)` 注册悬浮层、随插件 `ctx` 自动清理（**未**把注册包进 `ctx.effect` 且不返回 disposer），因此 HMR 重挂载不会残留旧注册。
+
+**退出热加载开发**（解除软链，恢复普通安装）：
+
+```powershell
+npm run unlink    # = dsh plugin --profile web remove totoro-pet
+```
+
+之后可按需改用 `dsh plugin --profile web add totoro-pet`（npm 包）或市场安装。
+
+> 注意：`link:` 仅用于本地开发。发布到市场的插件仍走 tgz / 仓库源，用户侧由 dsh-market 正常收录，无需软链。
+
 ## 🌐 提交到 dsh 插件市场
 
 1. Fork [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)，在 `data/plugins/` 新增 `Lucasli2018__totoro-pet.yml`：
@@ -117,7 +147,7 @@ npm 包内含 `lib`、`docs`、`cordis.patch.yml` 与 README（`assets`/`scripts
    ```
 
 2. PR 门禁（pr-gate）硬性要求：仓库含 `dsh.bundle`（已满足）、创建 ≥1 天、提交数 ≥10、加 `dsh-plugin` topic。
-3. 合并后约一天内 dsh-market 自动收录；本地调试可暂用 `dsh plugin --profile web add <本地 totoro-pet-*.tgz>`。
+3. 合并后约一天内 dsh-market 自动收录；在此之前本地调试可直接用 npm 包安装 `dsh plugin --profile web add totoro-pet`。
 
 ## License
 

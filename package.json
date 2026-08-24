@@ -27,7 +27,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --check lib/index.js && node --check lib/client.js && node tests/smoke-client.mjs"
+    "test": "node --check lib/index.js && node --check lib/client.js && node tests/smoke-client.mjs",
+    "link": "dsh plugin --profile web add link:.",
+    "unlink": "dsh plugin --profile web remove totoro-pet"
   },
   "dsh": {
     "bundle": {
