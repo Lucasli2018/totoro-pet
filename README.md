@@ -1,6 +1,8 @@
 # totoro-pet · DSH Web GUI 桌宠插件
+
 [![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/your-owner/your-plugin-slug)
 DSH Web GUI 桌宠插件（悬浮 Q 版龙猫 · 喂食/抚摸/玩耍/睡觉互动养成）。
+
 > 一只栖居在回环端口里的 Q 版龙猫「绒绒」：白天帮你盯日志、踩构建，夜里蜷成毛球给 CPU 取暖。
 
 totoro-pet 是一个 [DeepSeek Harness](https://www.npmjs.com/package/@deepseek-ai/dsh) Web GUI 悬浮桌宠插件：SVG 手绘 Q 版龙猫常驻页面右下角，支持喂食、抚摸、玩耍、睡觉四种互动养成（饱食/心情/精力三维状态 + 经验等级），拖拽换位、外观自定义、图鉴鉴赏一应俱全。零构建纯 JS 双半边架构（宿主 ESM + 浏览器 ModuleLoader factory），安装即用。
@@ -39,14 +41,14 @@ dsh plugin --profile web add totoro-pet
 
 ## 🎮 玩法速览
 
-| 动作 | 数值效果 | 经验 | 限制 |
-|---|---|---|---|
-| 🍎 喂食 feed | 饱食 +30 | +5 | 无 |
-| ✋ 抚摸 pet | 心情 +10 | +2 | 冷却 10 秒 |
-| 🎾 玩耍 play | 精力 −15、心情 +15 | +8 | 结算后精力 <15 拒绝 |
-| 💤 睡觉 sleep | 入睡：精力 +12/时回充 | — | 幂等，重复无副作用 |
-| ☀️ 唤醒 wake | 结束睡眠 | — | 幂等 |
-| 👆 点击本体 | 扭一扭 + 闲聊一句 | — | — |
+| 动作          | 数值效果          | 经验  | 限制           |
+| ----------- | ------------- | --- | ------------ |
+| 🍎 喂食 feed  | 饱食 +30        | +5  | 无            |
+| ✋ 抚摸 pet    | 心情 +10        | +2  | 冷却 10 秒      |
+| 🎾 玩耍 play  | 精力 −15、心情 +15 | +8  | 结算后精力 <15 拒绝 |
+| 💤 睡觉 sleep | 入睡：精力 +12/时回充 | —   | 幂等，重复无副作用    |
+| ☀️ 唤醒 wake  | 结束睡眠          | —   | 幂等           |
+| 👆 点击本体     | 扭一扭 + 闲聊一句    | —   | —            |
 
 自然衰减（每小时）：清醒 饱食 −0.8 / 心情 −0.5 / 精力 −1.5；睡眠 减半 / 减半 / 精力 +12。关掉页面也在衰减哦。完整规则见《使用手册》第四章。
 
@@ -54,12 +56,12 @@ dsh plugin --profile web add totoro-pet
 
 Base URL：`http://127.0.0.1:3080/api/totoro-pet`（仅回环可达）。
 
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| GET | `/state` | 查询状态（先结算衰减） |
-| POST | `/interact` | 交互 `{"type":"feed\|pet\|play\|sleep\|wake"}` |
-| GET / POST | `/config` | 读取 / 部分更新配置 |
-| POST | `/reset` | 状态归零（配置不动） |
+| 方法         | 路径          | 说明                                           |
+| ---------- | ----------- | -------------------------------------------- |
+| GET        | `/state`    | 查询状态（先结算衰减）                                  |
+| POST       | `/interact` | 交互 `{"type":"feed\|pet\|play\|sleep\|wake"}` |
+| GET / POST | `/config`   | 读取 / 部分更新配置                                  |
+| POST       | `/reset`    | 状态归零（配置不动）                                   |
 
 统一包裹 `{ok:true,...}` / `{ok:false,error:"..."}`。权威契约与字段级细节见 [docs/API.md](docs/API.md)，curl 示例见《使用手册》第七章。
 
@@ -96,13 +98,14 @@ npm 包内含 `lib`、`docs`、`cordis.patch.yml` 与 README（`assets`/`scripts
 ## 🔄 卸载 vs 停用（无需重启 dsh）
 
 - **卸载** `dsh plugin --profile web remove totoro-pet`：本质是在 web profile 执行 `pnpm remove`，只改磁盘上的 `package.json` / lockfile。运行中的 dsh 服务进程在启动时已把插件 bundle 清单读进内存，**刷新页面不会重新读盘**，需**彻底退出并重启 dsh** 才能清掉残留引用。
-- **停用（推荐，HMR 即时生效）**：不改磁盘卸载，而是在你的 web profile 补丁层 `cordis.patch.yml` 末尾追加：
 
+- **停用（推荐，HMR 即时生效）**：不改磁盘卸载，而是在你的 web profile 补丁层 `cordis.patch.yml` 末尾追加：
+  
   ```yaml
   - id: totoro-pet
     disabled: true
   ```
-
+  
   保存后约 1 秒 dsh 自动重新组装（HMR），刷新页面即生效，**无需重启 dsh 服务**。
 
 ## 🔥 热加载开发（HMR，改源码即时生效）
@@ -136,7 +139,7 @@ npm run unlink    # = dsh plugin --profile web remove totoro-pet
 ## 🌐 提交到 dsh 插件市场
 
 1. Fork [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)，在 `data/plugins/` 新增 `Lucasli2018__totoro-pet.yml`：
-
+   
    ```yaml
    url: https://github.com/Lucasli2018/totoro-pet
    name: Lucasli2018/totoro-pet
@@ -147,7 +150,20 @@ npm run unlink    # = dsh plugin --profile web remove totoro-pet
    ```
 
 2. PR 门禁（pr-gate）硬性要求：仓库含 `dsh.bundle`（已满足）、创建 ≥1 天、提交数 ≥10、加 `dsh-plugin` topic。
+
 3. 合并后约一天内 dsh-market 自动收录；在此之前本地调试可直接用 npm 包安装 `dsh plugin --profile web add totoro-pet`。
+
+## Preview
+
+![](assets/2026-08-25-22-57-26-20df7efe9fa50ff67ca7ebe2ee685972.png)
+
+![](assets/2026-08-25-22-57-10-e8f1d27647436fe1f62b7cc71364f57a.png)
+
+![](assets/2026-08-25-22-57-39-03c3cbf3a3898173a79f72ea93d812d3.png)
+
+![](assets/2026-08-25-22-57-56-900c442ce0f03fad68e91cd450e03051.png)
+
+![](assets/2026-08-25-22-58-06-93024b41aeee4cce8e61ebaf7810cd20.png)
 
 ## License
 
